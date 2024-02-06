@@ -5,4 +5,4 @@ const router = Router()
 
 router.post("/gettables", postTablesController)
 
-export { router }
+export default router

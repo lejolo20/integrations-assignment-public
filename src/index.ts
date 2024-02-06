@@ -2,7 +2,8 @@ import express, { Request, Response } from "express"
 import https from "https"
 import dotenv from "dotenv"
 import { FoodlusZoneModel } from "./models/tables"
-import { router } from "./routes/getTables"
+import getTables from "./routes/getTables"
+import login from "./routes/login"
 
 const app = express()
 
@@ -14,7 +15,9 @@ app.get("/", (_req: Request, res: Response) => {
     res.send("Hello World!")
 })
 
-app.use("/api/external/v2/", router)
+app.use("/api/external/v2", getTables)
+
+app.use("/api/external/v2", login)
 
 const headers = {
     tenant: process.env.REVO_TENANT as string,
@@ -23,14 +26,14 @@ const headers = {
 }
 
 const options = {
-    hostname: "integrations.revoxef.works",
+    hostname: process.env.REVO_URL as string,
     port: 443,
     path: "/api/external/v2/rooms?withTables",
     method: "GET",
     headers: headers
 }
 
-const getRevoTables = (): Promise<FoodlusZoneModel[]> => {
+export const getRevoTables = (): Promise<FoodlusZoneModel[]> => {
     return new Promise((resolve, reject) => {
         const req = https.request(options, (res) => {
             let data = ""
@@ -68,9 +71,9 @@ const getRevoTables = (): Promise<FoodlusZoneModel[]> => {
     })
 }
 
-getRevoTables().then((data) => {
+/* getRevoTables().then((data) => {
     console.log(data)
-})
+}) */
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000")
