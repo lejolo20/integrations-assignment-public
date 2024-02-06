@@ -14,8 +14,7 @@ dotenv.config()
 app.get("/", (_req: Request, res: Response) => {
     res.send("Hello World!")
 })
-
-app.use("/api/external/v2", getTables)
+app.use("/api/external/v2/auth", getTables)
 
 app.use("/api/external/v2", login)
 
@@ -25,7 +24,7 @@ const headers = {
     "client-token": process.env.REVO_CLIENT_TOKEN as string
 }
 
-const options = {
+export const options = {
     hostname: process.env.REVO_URL as string,
     port: 443,
     path: "/api/external/v2/rooms?withTables",
@@ -45,15 +44,18 @@ export const getRevoTables = (): Promise<FoodlusZoneModel[]> => {
                 const newData = JSON.parse(data)
                 const dataTables: FoodlusZoneModel[] = newData.data.map(
                     (item: any) => {
+                        //console.log(item)
                         return {
                             name: item.name,
                             serviceLocations: item.tables.map((table: any) => {
-                                return {
+                                let result = {
                                     name: table.name,
                                     code: table.id,
                                     zoneId: table.room_id,
                                     zoneName: item.name
                                 }
+                                console.log(result)
+                                return result
                             })
                         }
                     }
@@ -70,10 +72,6 @@ export const getRevoTables = (): Promise<FoodlusZoneModel[]> => {
         req.end()
     })
 }
-
-/* getRevoTables().then((data) => {
-    console.log(data)
-}) */
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000")
